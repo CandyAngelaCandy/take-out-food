@@ -25,7 +25,16 @@ function bestCharge(selectedItems) {
 
   console.log("半价商品名",halfPriceGoodsNameArr);
 
-  printResult +=`-----------------------------------\n使用优惠:\n指定菜品半价(${halfPriceGoodsNameArr.join(", ")})，省${halfPriceGoodsSavedFee}元\n-----------------------------------\n`;
+  let thirtySubstractSixFee = countThirtySubstractSixFee(selectedItemsObj);
+
+  if(halfPriceGoodsSavedFee >= thirtySubstractSixFee){
+    printResult +=`-----------------------------------\n使用优惠:\n指定菜品半价(${halfPriceGoodsNameArr.join(", ")})，省${halfPriceGoodsSavedFee}元\n-----------------------------------\n`;
+  }else{
+    printResult += `-----------------------------------使用优惠:\n满30减6元，省${thirtySubstractSixFee}元\n-----------------------------------\n`;
+  }
+
+//   printResult += `总计：${}元\n
+// ===================================\n`;
 
   console.log(printResult);
 }
@@ -81,6 +90,40 @@ function getHalfPriceGoodsName(allItems,selectedItemsObj) {
   console.log(halfPriceGoodsNameArr);
 
   return halfPriceGoodsNameArr;
+}
+
+function calculateThirtySubstractSixBarcode() {
+
+  let allPromotionGoods = loadPromotions();
+
+  let thirtySubstractSixeGoods = allPromotionGoods.filter(function (singleHalfPriceGoods) {
+    return singleHalfPriceGoods["type"] == "满30减6元";
+  });
+
+  let thirtySubstractSixeGoodsArr = thirtySubstractSixeGoods[0]["items"];
+
+  return thirtySubstractSixeGoodsArr;
+}
+
+function countThirtySubstractSixFee(selectedItemsObj) {
+  let thirtySubstractSixArr = calculateThirtySubstractSixBarcode();
+
+  let thirtySubstractSixSavedFee = 0;
+
+  for(let singleItem in selectedItemsObj){
+
+    if(thirtySubstractSixArr && thirtySubstractSixArr.includes(singleItem)){
+
+      //单价
+      let goodsPrice = getGoodsPrice(singleItem);
+      console.log("单价",goodsPrice);
+
+      thirtySubstractSixSavedFee += selectedItemsObj[singleItem] * goodsPrice;
+    }
+
+  }
+
+  return thirtySubstractSixSavedFee;
 }
 
 function countHalfPriceGoodsSavedFee(selectedItemsObj) {
