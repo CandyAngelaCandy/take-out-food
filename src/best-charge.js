@@ -4,37 +4,42 @@ let loadPromotions = require("./promotions");
 function bestCharge(selectedItems) {
 
   let selectedItemsObj = calculateItemCount(selectedItems);
-  let printInfoArr = [];
+
   let allItems = loadAllItems();
 
   let printResult = `============= 订餐明细 =============\n`;
 
-  console.log(allItems);
+  //console.log(allItems);
+
+  let sum = 0;
 
   for(let selectedSingleItem in selectedItemsObj){
 
     printResult += singleItemInfo(selectedSingleItem,allItems,selectedItemsObj);
-
+    sum += getSingleItemSum(selectedSingleItem,allItems,selectedItemsObj);
   }
 
   let halfPriceGoodsSavedFee = countHalfPriceGoodsSavedFee(selectedItemsObj);
 
-  console.log("半价节省",halfPriceGoodsSavedFee);
+  //console.log("半价节省",halfPriceGoodsSavedFee);
 
   let halfPriceGoodsNameArr = getHalfPriceGoodsName(allItems,selectedItemsObj);
 
-  console.log("半价商品名",halfPriceGoodsNameArr);
+  //console.log("半价商品名",halfPriceGoodsNameArr);
 
   let thirtySubstractSixFee = countThirtySubstractSixFee(selectedItemsObj);
 
+  let savedFee;
+
   if(halfPriceGoodsSavedFee >= thirtySubstractSixFee){
     printResult +=`-----------------------------------\n使用优惠:\n指定菜品半价(${halfPriceGoodsNameArr.join(", ")})，省${halfPriceGoodsSavedFee}元\n-----------------------------------\n`;
+    savedFee = halfPriceGoodsSavedFee;
   }else{
     printResult += `-----------------------------------使用优惠:\n满30减6元，省${thirtySubstractSixFee}元\n-----------------------------------\n`;
+    savedFee = thirtySubstractSixFee;
   }
 
-//   printResult += `总计：${}元\n
-// ===================================\n`;
+   printResult += `总计：${sum - savedFee}元\n===================================\n`;
 
   console.log(printResult);
 }
@@ -87,7 +92,7 @@ function getHalfPriceGoodsName(allItems,selectedItemsObj) {
 
   });
 
-  console.log(halfPriceGoodsNameArr);
+  //console.log(halfPriceGoodsNameArr);
 
   return halfPriceGoodsNameArr;
 }
@@ -116,7 +121,7 @@ function countThirtySubstractSixFee(selectedItemsObj) {
 
       //单价
       let goodsPrice = getGoodsPrice(singleItem);
-      console.log("单价",goodsPrice);
+      //console.log("单价",goodsPrice);
 
       thirtySubstractSixSavedFee += selectedItemsObj[singleItem] * goodsPrice;
     }
@@ -137,7 +142,7 @@ function countHalfPriceGoodsSavedFee(selectedItemsObj) {
 
       //单价
       let goodsPrice = getGoodsPrice(singleItem);
-      console.log("单价",goodsPrice);
+      //console.log("单价",goodsPrice);
 
       halfPriceGoodsSavedFee += selectedItemsObj[singleItem] * goodsPrice;
     }
@@ -146,7 +151,6 @@ function countHalfPriceGoodsSavedFee(selectedItemsObj) {
 
   return halfPriceGoodsSavedFee;
 }
-
 
 function getGoodsPrice(barcode) {
   let allItems = loadAllItems();
@@ -174,6 +178,17 @@ function singleItemInfo(selectedSingleItem,allItems,selectedItemsObj) {
   return singleItemInfoStr;
 }
 
+function getSingleItemSum(selectedSingleItem,allItems,selectedItemsObj) {
+
+  let itemDetailArr = allItems.filter(function (item) {
+    return item["id"] == selectedSingleItem;
+  });
+
+  let singleItemSum = selectedItemsObj[selectedSingleItem] * itemDetailArr[0]["price"];
+
+  return singleItemSum;
+}
+
 function calculateItemCount(inputs) {
    let allItemsObj = {};
 
@@ -181,7 +196,7 @@ function calculateItemCount(inputs) {
      calculateSingleItem(item,allItemsObj);
    });
 
-   console.log(allItemsObj);
+   //console.log(allItemsObj);
 
    return allItemsObj;
 }
@@ -194,13 +209,6 @@ function calculateSingleItem(item,allItemsObj) {
   allItemsObj[itemBarcode] = itemNumber;
 
 }
-
-
-// 使用优惠:
-//   指定菜品半价(黄焖鸡，凉皮)，省13元
-// -----------------------------------
-//   总计：25元
-
 
 let inputs = ["ITEM0013 x 4", "ITEM0022 x 1"];
 
