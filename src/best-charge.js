@@ -1,5 +1,5 @@
 let loadAllItems = require("./items");
-let Promotions = require("./promotions");
+let loadPromotions = require("./promotions");
 
 function bestCharge(selectedItems) {
 
@@ -17,7 +17,103 @@ function bestCharge(selectedItems) {
 
   }
 
+  let halfPriceGoodsSavedFee = countHalfPriceGoodsSavedFee(selectedItemsObj);
+
+  console.log("半价节省",halfPriceGoodsSavedFee);
+
+  let halfPriceGoodsNameArr = getHalfPriceGoodsName(allItems,selectedItemsObj);
+
+  console.log("半价商品名",halfPriceGoodsNameArr);
+
+  printResult +=`-----------------------------------\n使用优惠:\n指定菜品半价(${halfPriceGoodsNameArr.join(", ")})，省${halfPriceGoodsSavedFee}元\n-----------------------------------\n`;
+
   console.log(printResult);
+}
+
+
+function countHalfPriceGoodsBarcode() {
+  let allPromotionGoods = loadPromotions();
+
+  let halfPriceGoods = allPromotionGoods.filter(function (singleHalfPriceGoods) {
+    return singleHalfPriceGoods["type"] == "指定菜品半价";
+  });
+
+  let halfPriceGoodsArr = halfPriceGoods[0]["items"];
+
+  return halfPriceGoodsArr;
+
+}
+
+function getSelectedGoodsBarcode(selectedItemsObj) {
+
+  let halfPriceGoodsArr = countHalfPriceGoodsBarcode();
+
+  let selectedGoodsName = [];
+
+  for(let singleItem in selectedItemsObj){
+
+    if(halfPriceGoodsArr.includes(singleItem)){
+
+      selectedGoodsName.push(singleItem);
+    }
+
+  }
+
+  return selectedGoodsName;
+}
+
+function getHalfPriceGoodsName(allItems,selectedItemsObj) {
+
+  let halfPriceGoodsNameArr = [];
+
+  let halfPriceGoodsArr = getSelectedGoodsBarcode(selectedItemsObj);//错
+
+  halfPriceGoodsArr.map(function (singleHalfPriceGoodBarcode) {
+
+    let specifiedBarcodeArr = allItems.filter(function (singleItem) {
+      return singleItem["id"] == singleHalfPriceGoodBarcode;
+    });
+
+    halfPriceGoodsNameArr.push(specifiedBarcodeArr[0]["name"]);
+
+  });
+
+  console.log(halfPriceGoodsNameArr);
+
+  return halfPriceGoodsNameArr;
+}
+
+function countHalfPriceGoodsSavedFee(selectedItemsObj) {
+  let halfPriceGoodsArr = countHalfPriceGoodsBarcode();
+
+  let halfPriceGoodsSavedFee = 0;
+
+  for(let singleItem in selectedItemsObj){
+
+    if(halfPriceGoodsArr.includes(singleItem)){
+
+      //单价
+      let goodsPrice = getGoodsPrice(singleItem);
+      console.log("单价",goodsPrice);
+
+      halfPriceGoodsSavedFee += selectedItemsObj[singleItem] * goodsPrice;
+    }
+
+  }
+
+  return halfPriceGoodsSavedFee;
+}
+
+
+function getGoodsPrice(barcode) {
+  let allItems = loadAllItems();
+
+  let specifiedBarcodeArr = allItems.filter(function (singleItem) {
+    return singleItem["id"] == barcode;
+  });
+
+  return specifiedBarcodeArr[0]["price"];
+
 }
 
 function singleItemInfo(selectedSingleItem,allItems,selectedItemsObj) {
@@ -56,13 +152,12 @@ function calculateSingleItem(item,allItemsObj) {
 
 }
 
-// ```
-// ============= 订餐明细 =============
-// 肉夹馍 x 4 = 24元
+
+// 使用优惠:
+//   指定菜品半价(黄焖鸡，凉皮)，省13元
 // -----------------------------------
-// 总计：24元
-// ===================================
-// ```
+//   总计：25元
+
 
 let inputs = ["ITEM0013 x 4", "ITEM0022 x 1"];
 
